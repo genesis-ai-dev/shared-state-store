@@ -26,10 +26,12 @@ To listen for changes to a specific state value, use the command `multiExtension
 
 Upon activating the extension, the activation function returns an object containing methods for interacting with the state store programmatically. After initializing the global state through `initializeGlobalState`, you gain access to `storeListener` and `updateGlobalState` methods. These methods allow you to listen for state changes and update the state, respectively.
 
-#### Example Implementation:
+#### Example Implementation with Strong Type Checking:
+
 ```typescript
 import \* as vscode from "vscode";
 import { VerseRefGlobalState, SelectedTextDataWithContext } from "../types";
+
 type GlobalStateUpdate =
 | { key: "verseRef"; value: VerseRefGlobalState }
 | { key: "uri"; value: string }
