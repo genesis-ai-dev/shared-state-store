@@ -1,0 +1,50 @@
+{
+	"name": "shared-state-store",
+	"displayName": "Shared State Store Extension",
+	"description": "Shared State management for Codex",
+	"version": "0.0.1",
+	"publisher": "codex",
+	"repository": "add repo url",
+	"engines": {
+		"vscode": "^1.74.0"
+	},
+	"categories": [
+		"Other"
+	],
+	"activationEvents": [],
+	"main": "./out/extension.js",
+	"contributes": {
+		"commands": [
+			{
+				"command": "multiExtensionState.globalStateEmitter",
+				"title": "Access Global State Emitter"
+			},
+			{
+				"command": "multiExtensionState.setState",
+				"title": "Set Global State"
+			},
+			{
+				"command": "multiExtensionState.getState",
+				"title": "Get Global State"
+			},
+			{
+				"command": "multiExtensionState.registerListener",
+				"title": "Register Global State Listener"
+			}
+		]
+	},
+	"scripts": {
+		"vscode:prepublish": "npm run compile",
+		"compile": "tsc -p ./",
+		"lint": "eslint \"src/**/*.ts\"",
+		"watch": "tsc -watch -p ./"
+	},
+	"devDependencies": {
+		"@types/node": "^16.18.34",
+		"@types/vscode": "^1.73.0",
+		"@typescript-eslint/eslint-plugin": "^6.7.0",
+		"@typescript-eslint/parser": "^6.7.0",
+		"eslint": "^8.26.0",
+		"typescript": "^5.3.2"
+	}
+}
