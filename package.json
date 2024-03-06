@@ -1,6 +1,6 @@
 {
   "name": "shared-state-store",
-  "displayName": "Shared State Store Extension",
+  "displayName": "Shared State Store",
   "description": "Shared State management for Codex",
   "version": "0.0.1",
   "publisher": "codex",
