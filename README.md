@@ -12,15 +12,15 @@ This extension provides a shared state management solution for VS Code extension
 
 ### Setting a State Value
 
-To set a state value, use the command `multiExtensionState.setState` with a key and value. This will store the value in the global state, accessible by any extension.
+To set a state value, use the command `sharedStateStore.setState` with a key and value. This will store the value in the global state, accessible by any extension.
 
 ### Getting a State Value
 
-To retrieve a state value, use the command `multiExtensionState.getState` with the key of the value you want to retrieve. This will return the value associated with the key from the global state.
+To retrieve a state value, use the command `sharedStateStore.getState` with the key of the value you want to retrieve. This will return the value associated with the key from the global state.
 
 ### Registering a Listener for State Changes
 
-To listen for changes to a specific state value, use the command `multiExtensionState.registerListener` with a key and a callback command. Whenever the specified state value changes, your callback command will be executed.
+To listen for changes to a specific state value, use the command `sharedStateStore.registerListener` with a key and a callback command. Whenever the specified state value changes, your callback command will be executed.
 
 ### Utilizing Returned Values from Activation Function
 
