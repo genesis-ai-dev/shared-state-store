@@ -3,7 +3,7 @@
   "displayName": "Shared State Store",
   "description": "Shared State management for Codex",
   "version": "0.0.1",
-  "publisher": "codex",
+  "publisher": "project-accelerate",
   "repository": "https://github.com/genesis-ai-dev/shared-state-store",
   "engines": {
     "vscode": "^1.74.0"
@@ -17,15 +17,15 @@
     "commands": [
       {
         "command": "sharedStateStore.setState",
-        "title": "Set Global State"
+        "title": "Set a Value in Shared State Store"
       },
       {
         "command": "sharedStateStore.getState",
-        "title": "Get Global State"
+        "title": "Retrieve a Value from Shared State Store"
       },
       {
         "command": "sharedStateStore.registerListener",
-        "title": "Register Global State Listener"
+        "title": "Register Command to Listen for Changes in Shared State Store"
       }
     ]
   },

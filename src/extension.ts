@@ -41,20 +41,35 @@ export function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(
     vscode.commands.registerCommand(
       "sharedStateStore.setState",
-      async (key: string, value: string) => {
-        if (key && value) {
-          // Set the key-value pair in the global state store
-          await updateGlobalState(context, { key, value });
-          // Notify the user that the key-value pair has been set in the state store
-          vscode.window.showInformationMessage(
-            `State updated: (${key}: ${value}).`
-          );
-        } else {
-          // Notify the user that the operation was cancelled due to missing key or value
-          vscode.window.showInformationMessage(
-            "Operation cancelled. Key or value was missing."
-          );
+      async (key: string | undefined, value: any | undefined) => {
+        if (!key) {
+          key = await vscode.window.showInputBox({
+            prompt: "Enter the key for the state you want to set",
+          });
+          if (!key) {
+            vscode.window.showInformationMessage(
+              "Operation cancelled. Key was missing."
+            );
+            return;
+          }
         }
+        if (!value) {
+          value = await vscode.window.showInputBox({
+            prompt: `Enter the value for the state key '${key}'`,
+          });
+          if (!value) {
+            vscode.window.showInformationMessage(
+              "Operation cancelled. Value was missing."
+            );
+            return;
+          }
+        }
+        // Set the key-value pair in the global state store
+        await updateGlobalState(context, { key, value });
+        // Notify the user that the key-value pair has been set in the state store
+        vscode.window.showInformationMessage(
+          `State updated: (${key}: ${value}).`
+        );
       }
     )
   );
@@ -62,7 +77,13 @@ export function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(
     vscode.commands.registerCommand(
       "sharedStateStore.getState",
-      async (key: string) => {
+      async (key: string | undefined) => {
+        if (!key) {
+          // Prompt the user for the key if it was not passed as an argument
+          key = await vscode.window.showInputBox({
+            prompt: "Enter the key for the state you want to retrieve",
+          });
+        }
         if (key) {
           // Retrieve the key-value pair from the global state store
           return await context.globalState.get(key);
@@ -79,7 +100,10 @@ export function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(
     vscode.commands.registerCommand(
       "sharedStateStore.registerListener",
-      async (key: string, callBackCommand: CallBackCommand) => {
+      async (
+        key: string | undefined,
+        callBackCommand: CallBackCommand | undefined
+      ) => {
         if (key && callBackCommand) {
           console.log("Registering listener for state change", {
             key,
@@ -94,10 +118,24 @@ export function activate(context: vscode.ExtensionContext) {
             value: newListenersList,
           });
         } else {
-          // Notify the user that the operation was cancelled due to missing key or callback
-          vscode.window.showInformationMessage(
-            "Operation cancelled. Key or callback was missing."
-          );
+          key = await vscode.window.showInputBox({
+            prompt: "Enter the key for the listener",
+          });
+          if (!key) {
+            vscode.window.showInformationMessage(
+              "Operation cancelled. Key was missing."
+            );
+            return;
+          }
+          callBackCommand = await vscode.window.showInputBox({
+            prompt: "Enter the callback command for the listener",
+          });
+          if (!callBackCommand) {
+            vscode.window.showInformationMessage(
+              "Operation cancelled. Callback command was missing."
+            );
+            return;
+          }
         }
       }
     )
