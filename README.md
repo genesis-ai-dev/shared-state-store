@@ -29,11 +29,12 @@ Upon activating the extension, the activation function returns an object contain
 #### Example Implementation with Strong Type Checking:
 
 ```typescript
+// globalState.ts
 import * as vscode from "vscode";
 import { VerseRefGlobalState, SelectedTextDataWithContext } from "../types";
 type GlobalStateUpdate =
   | { key: "verseRef"; value: VerseRefGlobalState }
-  | { key: "uri"; value: string }
+  | { key: "uri"; value: string | null }
   | { key: "currentLineSelection"; value: SelectedTextDataWithContext };
 
 type GlobalStateKey = GlobalStateUpdate["key"];
@@ -42,31 +43,70 @@ type GlobalStateValue<K extends GlobalStateKey> = Extract<
   { key: K }
 >["value"];
 
-const extensionId = "codex.shared-state-store";
+const extensionId = "project-accelerate.shared-state-store";
 
-let storeListener: <K extends GlobalStateKey>(
-  keyForListener: K,
-  callBack: (value: GlobalStateValue<K>) => void
-) => void;
+type DisposeFunction = () => void;
+export async function initializeGlobalState() {
+  let storeListener: <K extends GlobalStateKey>(
+    keyForListener: K,
+    callBack: (value: GlobalStateValue<K> | undefined) => void
+  ) => DisposeFunction = () => () => undefined;
 
-let updateGlobalState: (update: GlobalStateUpdate) => void;
+  let updateStoreState: (update: GlobalStateUpdate) => void = () => undefined;
+  let getStoreState: <K extends GlobalStateKey>(
+    key: K
+  ) => Promise<GlobalStateValue<K> | undefined> = () =>
+    Promise.resolve(undefined);
 
-async function initializeGlobalState() {
   const extension = vscode.extensions.getExtension(extensionId);
-  if (!extension) {
-    console.log(`Extension ${extensionId} not found.`);
-  } else {
+  if (extension) {
     const api = await extension.activate();
     if (!api) {
       console.log(`Extension ${extensionId} does not expose an API.`);
     } else {
       storeListener = api.storeListener;
-      updateGlobalState = api.updateStoreState;
+
+      updateStoreState = api.updateStoreState;
+      getStoreState = api.getStoreState;
+      return {
+        storeListener,
+        updateStoreState,
+        getStoreState,
+      };
     }
   }
+  console.error(`Extension ${extensionId} not found.`);
+  return {
+    storeListener,
+    updateStoreState,
+    getStoreState,
+  };
 }
+```
 
-initializeGlobalState().catch(console.error);
+#### Example of use of storeListener
 
-export { storeListener, updateGlobalState };
+```typescript
+export class CustomWebviewProvider {
+    _context: vscode.ExtensionContext;
+    selectionChangeListener: any;
+    constructor(context: vscode.ExtensionContext) {
+        this._context = context;
+    }
+
+    resolveWebviewView(webviewView: vscode.WebviewView) {
+        initializeGlobalState().then(({ storeListener }) => {
+            const disposeFunction = storeListener("verseRef", (value) => {
+                if (value) {
+                    webviewView.webview.postMessage({
+                        command: "reload",
+                        data: { verseRef: value.verseRef, uri: value.uri },
+                    } as CommentPostMessages);
+                }
+            });
+            webviewView.onDidDispose(() => {
+                disposeFunction();
+            });
+        });
+  //...
 ```

@@ -1,7 +1,11 @@
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from "vscode";
-import { globalStateEmitter, updateGlobalState } from "./globalState";
+import {
+  globalStateEmitter,
+  updateGlobalState,
+  getStoreState,
+} from "./globalState";
 
 // This method is called when your extension is activated
 // Your extension acts as a state store and is activated the very first time the command is executed
@@ -30,10 +34,14 @@ export function activate(context: vscode.ExtensionContext) {
       }
     }
   );
+
+  // Properly remove a listener when the extension is deactivated
+  context.subscriptions.push(
+    new vscode.Disposable(() => globalStateEmitter.removeAllListeners())
+  );
   // Use the console to output diagnostic information and errors
   // This line of code will only be executed once when your state store extension is activated
   console.log("State store extension is now active!");
-
   // Commands for manipulating the state store are defined in the package.json file
   // Now provide the implementation of these commands with registerCommand
   // The commandId parameter must match the command field in package.json
@@ -143,16 +151,30 @@ export function activate(context: vscode.ExtensionContext) {
 
   return {
     storeListener: (keyForListener: string, callBack: (value: any) => void) => {
-      globalStateEmitter.on(
-        "changed",
-        ({ key, value }: { key: string; value: any }) => {
-          if (key === keyForListener) {
-            callBack(value);
-          }
+      // Define the listener function with a reference so it can be removed later
+      const listener = ({ key, value }: { key: string; value: any }) => {
+        if (key === keyForListener) {
+          callBack(value);
         }
-      );
+      };
+
+      // Add the listener to the globalStateEmitter
+      globalStateEmitter.on("changed", listener);
+
+      // Return a disposal function that removes the listener
+      const dispose = () => {
+        globalStateEmitter.removeListener("changed", listener);
+      };
+
+      // Optionally, if you want the listener to be automatically removed upon extension deactivation,
+      // you can add the dispose function to context.subscriptions.
+      // context.subscriptions.push({ dispose });
+
+      // Return the dispose function so it can be called to remove the listener manually if needed
+      return dispose;
     },
     updateStoreState: (arg: { key: string; value: any }) =>
       updateGlobalState(context, arg),
+    getStoreState: (key: string) => getStoreState(context, key),
   };
 }

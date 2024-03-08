@@ -15,4 +15,12 @@ function updateGlobalState(
   });
 }
 
-export { globalStateEmitter, updateGlobalState };
+async function getStoreState(
+  context: vscode.ExtensionContext,
+  key: string
+): Promise<any> {
+  const value = await context.globalState.get(key);
+  return value;
+}
+
+export { globalStateEmitter, updateGlobalState, getStoreState };
