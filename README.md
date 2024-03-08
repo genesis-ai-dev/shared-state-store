@@ -24,38 +24,48 @@ To listen for changes to a specific state value, use the command `sharedStateSto
 
 ### Utilizing Returned Values from Activation Function
 
-Upon activating the extension, the activation function returns an object containing methods for interacting with the state store programmatically. After initializing the global state through `initializeGlobalState`, you gain access to `storeListener` and `updateGlobalState` methods. These methods allow you to listen for state changes and update the state, respectively.
+Upon activating the extension, the activation function returns an object containing methods for interacting with the state store programmatically. After initializing the global state through `initializeStateStore`, you gain access to `storeListener`, `updateStoreState`, and `getStoreState` methods. These methods allow you to listen for state changes and update the state, respectively.
 
-#### Example Implementation with Strong Type Checking:
+#### Example Implementation with strong type checking:
 
 ```typescript
-// globalState.ts
+// stateStore.ts
 import * as vscode from "vscode";
-import { VerseRefGlobalState, SelectedTextDataWithContext } from "../types";
-type GlobalStateUpdate =
+
+interface SelectedTextDataWithContext {
+  selection: string;
+  completeLineContent: string | null;
+  vrefAtStartOfLine: string | null;
+  selectedText: string | null;
+}
+interface VerseRefGlobalState {
+  verseRef: string;
+  uri: string;
+}
+type StateStoreUpdate =
   | { key: "verseRef"; value: VerseRefGlobalState }
   | { key: "uri"; value: string | null }
   | { key: "currentLineSelection"; value: SelectedTextDataWithContext };
 
-type GlobalStateKey = GlobalStateUpdate["key"];
-type GlobalStateValue<K extends GlobalStateKey> = Extract<
-  GlobalStateUpdate,
+type StateStoreKey = StateStoreUpdate["key"];
+type StateStoreValue<K extends StateStoreKey> = Extract<
+  StateStoreUpdate,
   { key: K }
 >["value"];
 
 const extensionId = "project-accelerate.shared-state-store";
 
 type DisposeFunction = () => void;
-export async function initializeGlobalState() {
-  let storeListener: <K extends GlobalStateKey>(
+export async function initializeStateStore() {
+  let storeListener: <K extends StateStoreKey>(
     keyForListener: K,
-    callBack: (value: GlobalStateValue<K> | undefined) => void
+    callBack: (value: StateStoreValue<K> | undefined) => void
   ) => DisposeFunction = () => () => undefined;
 
-  let updateStoreState: (update: GlobalStateUpdate) => void = () => undefined;
-  let getStoreState: <K extends GlobalStateKey>(
+  let updateStoreState: (update: StateStoreUpdate) => void = () => undefined;
+  let getStoreState: <K extends StateStoreKey>(
     key: K
-  ) => Promise<GlobalStateValue<K> | undefined> = () =>
+  ) => Promise<StateStoreValue<K> | undefined> = () =>
     Promise.resolve(undefined);
 
   const extension = vscode.extensions.getExtension(extensionId);
@@ -88,14 +98,8 @@ export async function initializeGlobalState() {
 
 ```typescript
 export class CustomWebviewProvider {
-    _context: vscode.ExtensionContext;
-    selectionChangeListener: any;
-    constructor(context: vscode.ExtensionContext) {
-        this._context = context;
-    }
-
     resolveWebviewView(webviewView: vscode.WebviewView) {
-        initializeGlobalState().then(({ storeListener }) => {
+        initializeStateStore().then(({ storeListener }) => {
             const disposeFunction = storeListener("verseRef", (value) => {
                 if (value) {
                     webviewView.webview.postMessage({
