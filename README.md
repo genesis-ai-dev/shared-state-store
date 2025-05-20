@@ -4,7 +4,6 @@ This extension provides a shared state management solution for VS Code extension
 
 ## Features
 
-- IS NOW WEB COMPATIBLE
 - Set and get global state values.
 - Register listeners for state changes.
 - Access a global state emitter for advanced state management.
